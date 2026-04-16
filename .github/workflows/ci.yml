@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: xifty-rust-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ github.workspace }}/XIFtyRust
+    env:
+      XIFTY_CORE_DIR: ${{ github.workspace }}/XIFty
+    steps:
+      - name: Check out binding repo
+        uses: actions/checkout@v4
+        with:
+          path: XIFtyRust
+
+      - name: Check out core repo
+        uses: actions/checkout@v4
+        with:
+          repository: XIFtySense/XIFty
+          path: XIFty
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust artifacts
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: |
+            XIFty -> target
+            XIFtyRust -> target
+
+      - name: Run tests
+        run: cargo test
+
+      - name: Run example
+        run: cargo run --example basic_usage
