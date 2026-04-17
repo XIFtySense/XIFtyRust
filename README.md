@@ -37,6 +37,20 @@ XIFTY_CORE_DIR=/path/to/XIFty cargo test
 - CI validates the wrapper against the public XIFty core repo on every push
 - crate metadata is in place for future crates.io distribution
 
+## Release Model
+
+- `CI` runs tests, examples, and a package dry-run on every push
+- `release.yml` validates crate packaging on tagged releases
+- crates.io publishing should wait until the crate no longer depends on a
+  sibling XIFty core checkout at build/runtime
+
+## Maintainer Setup
+
+1. Use tagged releases to mark supported wrapper versions
+2. Keep validating crate packaging in CI
+3. Do not publish to crates.io until the crate can build without a sibling
+   XIFty core checkout
+
 ## License
 
 MIT

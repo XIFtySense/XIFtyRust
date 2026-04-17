@@ -1,24 +1,20 @@
-name: CI
+name: Release Validation
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
+  release:
+    types:
+      - published
   workflow_dispatch:
 
 permissions:
   contents: read
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
 concurrency:
-  group: xifty-rust-${{ github.workflow }}-${{ github.ref }}
+  group: xifty-rust-release-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  test:
+  validate:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     defaults:
@@ -41,18 +37,8 @@ jobs:
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Cache Rust artifacts
-        uses: Swatinem/rust-cache@v2
-        with:
-          workspaces: |
-            XIFty -> target
-            XIFtyRust -> target
+      - name: Cargo package list
+        run: cargo package --list
 
-      - name: Run tests
-        run: cargo test
-
-      - name: Run example
-        run: cargo run --example basic_usage
-
-      - name: Package dry-run
+      - name: Cargo publish dry-run
         run: cargo publish --dry-run
