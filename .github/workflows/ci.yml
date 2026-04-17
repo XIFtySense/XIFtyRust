@@ -10,6 +10,9 @@ on:
 permissions:
   contents: read
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 concurrency:
   group: xifty-rust-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -17,6 +20,7 @@ concurrency:
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     defaults:
       run:
         working-directory: ${{ github.workspace }}/XIFtyRust
@@ -24,12 +28,12 @@ jobs:
       XIFTY_CORE_DIR: ${{ github.workspace }}/XIFty
     steps:
       - name: Check out binding repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           path: XIFtyRust
 
       - name: Check out core repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: XIFtySense/XIFty
           path: XIFty

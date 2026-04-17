@@ -2,8 +2,14 @@
 name = "xifty-rust"
 version = "0.1.0"
 edition = "2024"
+description = "Rust binding crate for XIFty"
+license = "MIT"
+repository = "https://github.com/XIFtySense/XIFtyRust"
+homepage = "https://github.com/XIFtySense/XIFtyRust"
+readme = "README.md"
+keywords = ["metadata", "exif", "xmp", "ffi", "media"]
+categories = ["api-bindings", "multimedia"]
 
 [dependencies]
 serde_json = "1.0"
 thiserror = "2.0"
-
