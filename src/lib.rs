@@ -117,25 +117,61 @@ mod tests {
     use super::*;
 
     #[test]
-    fn version_is_non_empty() {
-        assert!(!version().is_empty());
+    fn version_looks_semantic() {
+        assert!(version().chars().any(|ch| ch == '.'));
     }
 
     #[test]
-    fn probe_returns_detected_format() {
+    fn probe_returns_input_summary() {
         let output = probe("fixtures/happy.jpg").unwrap();
+        assert_eq!(output["schema_version"], "0.1.0");
         assert_eq!(output["input"]["detected_format"], "jpeg");
+        assert_eq!(output["input"]["container"], "jpeg");
     }
 
     #[test]
-    fn extract_normalized_returns_expected_field() {
+    fn extract_defaults_to_full_envelope() {
+        let output = extract("fixtures/happy.jpg", ViewMode::Full).unwrap();
+        assert!(output.get("raw").is_some());
+        assert!(output.get("interpreted").is_some());
+        assert!(output.get("normalized").is_some());
+        assert!(output.get("report").is_some());
+    }
+
+    #[test]
+    fn raw_view_preserves_metadata_evidence() {
+        let output = extract("fixtures/happy.jpg", ViewMode::Raw).unwrap();
+        assert_eq!(output["raw"]["containers"][0]["label"], "jpeg");
+        assert_eq!(output["raw"]["metadata"][0]["tag_name"], "ImageWidth");
+    }
+
+    #[test]
+    fn interpreted_view_exposes_decoded_tags() {
+        let output = extract("fixtures/happy.jpg", ViewMode::Interpreted).unwrap();
+        let fields = output["interpreted"]["metadata"].as_array().unwrap();
+        let names: Vec<_> = fields.iter().map(|field| field["tag_name"].as_str().unwrap()).collect();
+        assert!(names.contains(&"Make"));
+        assert!(names.contains(&"Model"));
+        assert!(names.contains(&"DateTimeOriginal"));
+    }
+
+    #[test]
+    fn normalized_view_returns_expected_fields() {
         let output = extract("fixtures/happy.jpg", ViewMode::Normalized).unwrap();
         let fields = output["normalized"]["fields"].as_array().unwrap();
-        let make = fields
-            .iter()
-            .find(|field| field["field"] == "device.make")
-            .unwrap();
-        assert_eq!(make["value"]["value"], "XIFtyCam");
+        let field = |name: &str| fields.iter().find(|entry| entry["field"] == name).unwrap();
+        assert_eq!(field("captured_at")["value"]["value"], "2024-04-16T12:34:56");
+        assert_eq!(field("device.make")["value"]["value"], "XIFtyCam");
+        assert_eq!(field("device.model")["value"]["value"], "IterationOne");
+        assert_eq!(field("software")["value"]["value"], "XIFtyTestGen");
+        assert_eq!(field("dimensions.width")["value"]["value"], 800);
+        assert_eq!(field("dimensions.height")["value"]["value"], 600);
+    }
+
+    #[test]
+    fn report_view_stays_explicit_when_empty() {
+        let output = extract("fixtures/happy.jpg", ViewMode::Report).unwrap();
+        assert_eq!(output["report"]["issues"].as_array().unwrap().len(), 0);
+        assert_eq!(output["report"]["conflicts"].as_array().unwrap().len(), 0);
     }
 }
-

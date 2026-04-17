@@ -24,19 +24,11 @@ jobs:
     defaults:
       run:
         working-directory: ${{ github.workspace }}/XIFtyRust
-    env:
-      XIFTY_CORE_DIR: ${{ github.workspace }}/XIFty
     steps:
       - name: Check out binding repo
         uses: actions/checkout@v5
         with:
           path: XIFtyRust
-
-      - name: Check out core repo
-        uses: actions/checkout@v5
-        with:
-          repository: XIFtySense/XIFty
-          path: XIFty
 
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
@@ -45,14 +37,19 @@ jobs:
         uses: Swatinem/rust-cache@v2
         with:
           workspaces: |
-            XIFty -> target
+            XIFtyRust/.xifty-core -> target
             XIFtyRust -> target
+
+      - name: Prepare core
+        run: bash scripts/prepare-core.sh
 
       - name: Run tests
         run: cargo test
 
-      - name: Run example
-        run: cargo run --example basic_usage
+      - name: Run examples
+        run: |
+          cargo run --example basic_usage
+          cargo run --example gallery_ingest
 
       - name: Package dry-run
         run: cargo publish --dry-run

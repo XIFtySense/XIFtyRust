@@ -1,55 +1,69 @@
-# XIFtyRust
+# XIFty for Rust
 
-Rust binding crate for [XIFty](https://github.com/XIFtySense/XIFty).
+`XIFtyRust` is the official Rust binding repo for XIFty.
 
-`XIFtyRust` is a safe Rust wrapper over the stable `xifty-ffi` C ABI. It is
-ready for source-based use today and is intended to become the canonical Rust
-crate for consumers who want the XIFty engine without binding directly to the C
-surface.
+It provides a safe Rust wrapper over the stable `xifty-ffi` ABI so Rust
+applications can probe files and extract XIFty metadata views without binding
+directly to the C surface.
 
-## What You Get
+## What It Does
 
-- `version()` for the bound core version
-- `probe(path)` for fast format detection
-- `extract(path, view)` for the standard JSON views
-- Rust-native error handling around the ABI boundary
+XIFty exposes four complementary metadata views:
 
-## Quickstart
+- `raw`
+- `interpreted`
+- `normalized`
+- `report`
 
-Clone the public core repo as a sibling checkout, then run the crate against it:
+This crate keeps that contract intact and adds Rust-native error handling.
+
+## Quick Example
+
+```rust
+let output = xifty_rust::extract("photo.jpg", xifty_rust::ViewMode::Normalized)?;
+let fields = output["normalized"]["fields"].as_array().unwrap();
+```
+
+## API
+
+- `version()`
+- `probe(path)`
+- `extract(path, view)`
+
+## Why Use It
+
+Use this crate when you want:
+
+- native Rust access to XIFty
+- normalized fields for application logic
+- raw and interpreted metadata for provenance-sensitive workflows
+- a thin safe wrapper around the stable C ABI
+
+## Local Setup
+
+This repo no longer assumes a sibling `../XIFty` checkout.
+
+Prepare the core dependency into a repo-local cache:
 
 ```bash
-git clone git@github.com:XIFtySense/XIFty.git ../XIFty
+bash scripts/prepare-core.sh
+```
+
+Then run the crate:
+
+```bash
 cargo test
 cargo run --example basic_usage
+cargo run --example gallery_ingest
 ```
 
-If your core checkout lives elsewhere, set `XIFTY_CORE_DIR`:
-
-```bash
-XIFTY_CORE_DIR=/path/to/XIFty cargo test
-```
+You can still override the core location explicitly with `XIFTY_CORE_DIR`.
 
 ## Status
 
 - source-first and usable today
 - built on the stable `xifty-ffi` ABI
-- CI validates the wrapper against the public XIFty core repo on every push
-- crate metadata is in place for future crates.io distribution
-
-## Release Model
-
-- `CI` runs tests, examples, and a package dry-run on every push
-- `release.yml` validates crate packaging on tagged releases
-- crates.io publishing should wait until the crate no longer depends on a
-  sibling XIFty core checkout at build/runtime
-
-## Maintainer Setup
-
-1. Use tagged releases to mark supported wrapper versions
-2. Keep validating crate packaging in CI
-3. Do not publish to crates.io until the crate can build without a sibling
-   XIFty core checkout
+- CI validates the wrapper against the public XIFty core repo
 
 ## License
 
