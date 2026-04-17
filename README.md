@@ -41,12 +41,13 @@ Use this crate when you want:
 
 ## Local Setup
 
-This repo no longer assumes a sibling `../XIFty` checkout.
+This repo no longer assumes a sibling `../XIFty` checkout, and it no longer
+clones core source by default.
 
-Prepare the core dependency into a repo-local cache:
+Prepare the canonical runtime artifact into a repo-local cache:
 
 ```bash
-bash scripts/prepare-core.sh
+bash scripts/prepare-runtime.sh
 ```
 
 Then run the crate:
@@ -57,13 +58,24 @@ cargo run --example basic_usage
 cargo run --example gallery_ingest
 ```
 
-You can still override the core location explicitly with `XIFTY_CORE_DIR`.
+Runtime resolution order is:
+
+1. bundled runtime inside the crate/package, if present
+2. `XIFTY_RUNTIME_DIR`, if explicitly set
+3. repo-local runtime cache from `scripts/prepare-runtime.sh`
+4. `XIFTY_CORE_DIR` as an explicit source-tree override for maintainers
+
+This keeps normal use on a runtime-artifact path while preserving an honest
+source override for local maintainers.
 
 ## Status
 
-- source-first and usable today
+- release-ready but still source-first
 - built on the stable `xifty-ffi` ABI
-- CI validates the wrapper against the public XIFty core repo
+- release validation now runs against canonical runtime artifacts instead of
+  implicitly cloning core source
+- CI validates the wrapper against canonical runtime artifacts built from the
+  public XIFty core repo
 
 ## License
 

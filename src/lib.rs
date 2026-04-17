@@ -149,7 +149,10 @@ mod tests {
     fn interpreted_view_exposes_decoded_tags() {
         let output = extract("fixtures/happy.jpg", ViewMode::Interpreted).unwrap();
         let fields = output["interpreted"]["metadata"].as_array().unwrap();
-        let names: Vec<_> = fields.iter().map(|field| field["tag_name"].as_str().unwrap()).collect();
+        let names: Vec<_> = fields
+            .iter()
+            .map(|field| field["tag_name"].as_str().unwrap())
+            .collect();
         assert!(names.contains(&"Make"));
         assert!(names.contains(&"Model"));
         assert!(names.contains(&"DateTimeOriginal"));
@@ -160,7 +163,10 @@ mod tests {
         let output = extract("fixtures/happy.jpg", ViewMode::Normalized).unwrap();
         let fields = output["normalized"]["fields"].as_array().unwrap();
         let field = |name: &str| fields.iter().find(|entry| entry["field"] == name).unwrap();
-        assert_eq!(field("captured_at")["value"]["value"], "2024-04-16T12:34:56");
+        assert_eq!(
+            field("captured_at")["value"]["value"],
+            "2024-04-16T12:34:56"
+        );
         assert_eq!(field("device.make")["value"]["value"], "XIFtyCam");
         assert_eq!(field("device.model")["value"]["value"], "IterationOne");
         assert_eq!(field("software")["value"]["value"], "XIFtyTestGen");

@@ -20,8 +20,6 @@ jobs:
     defaults:
       run:
         working-directory: ${{ github.workspace }}/XIFtyRust
-    env:
-      XIFTY_CORE_DIR: ${{ github.workspace }}/XIFty
     steps:
       - name: Check out binding repo
         uses: actions/checkout@v5
@@ -37,8 +35,26 @@ jobs:
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
 
+      - name: Read runtime version
+        id: runtime_version
+        run: echo "value=$(cat runtime-version.txt)" >> "$GITHUB_OUTPUT"
+
+      - name: Build canonical runtime artifact
+        working-directory: ${{ github.workspace }}/XIFty
+        run: |
+          mkdir -p /tmp/xifty-runtime
+          python3 tools/build-runtime-artifact.py \
+            --output /tmp/xifty-runtime/xifty-runtime-linux-x64-v${{ steps.runtime_version.outputs.value }}.tar.gz
+          python3 tools/validate-runtime-artifact.py \
+            --artifact /tmp/xifty-runtime/xifty-runtime-linux-x64-v${{ steps.runtime_version.outputs.value }}.tar.gz
+          tar -xzf /tmp/xifty-runtime/xifty-runtime-linux-x64-v${{ steps.runtime_version.outputs.value }}.tar.gz -C /tmp/xifty-runtime
+
       - name: Cargo package list
+        env:
+          XIFTY_RUNTIME_DIR: /tmp/xifty-runtime/xifty-runtime-linux-x64-v${{ steps.runtime_version.outputs.value }}
         run: cargo package --list
 
       - name: Cargo publish dry-run
+        env:
+          XIFTY_RUNTIME_DIR: /tmp/xifty-runtime/xifty-runtime-linux-x64-v${{ steps.runtime_version.outputs.value }}
         run: cargo publish --dry-run

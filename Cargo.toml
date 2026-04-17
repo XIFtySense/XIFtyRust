@@ -13,3 +13,6 @@ categories = ["api-bindings", "multimedia"]
 [dependencies]
 serde_json = "1.0"
 thiserror = "2.0"
+
+[build-dependencies]
+serde_json = "1.0"
