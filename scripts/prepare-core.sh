@@ -6,6 +6,10 @@ CORE_DIR="${XIFTY_CORE_DIR:-$ROOT/.xifty-core}"
 CORE_REPO="${XIFTY_CORE_REPO:-https://github.com/XIFtySense/XIFty.git}"
 CORE_REF="${XIFTY_CORE_REF:-main}"
 
+if [ -d "$CORE_DIR" ] && [ ! -d "$CORE_DIR/.git" ]; then
+  rm -rf "$CORE_DIR"
+fi
+
 if [ ! -d "$CORE_DIR/.git" ]; then
   git clone --depth 1 --branch "$CORE_REF" "$CORE_REPO" "$CORE_DIR"
 else

@@ -35,15 +35,15 @@ jobs:
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
 
+      - name: Prepare core
+        run: bash scripts/prepare-core.sh
+
       - name: Cache Rust artifacts
         uses: Swatinem/rust-cache@v2
         with:
           workspaces: |
             XIFtyRust/.xifty-core -> target
             XIFtyRust -> target
-
-      - name: Prepare core
-        run: bash scripts/prepare-core.sh
 
       - name: Run tests
         run: cargo test
