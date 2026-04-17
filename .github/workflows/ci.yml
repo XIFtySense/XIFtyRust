@@ -24,6 +24,8 @@ jobs:
     defaults:
       run:
         working-directory: ${{ github.workspace }}/XIFtyRust
+    env:
+      XIFTY_CORE_DIR: ${{ github.workspace }}/XIFtyRust/.xifty-core
     steps:
       - name: Check out binding repo
         uses: actions/checkout@v5
